@@ -11,12 +11,11 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
 import { apiClient } from "@/lib/api";
 import { NavLink, useLocation } from "react-router";
 import type { UUID } from "@elizaos/core";
-import { Book, Cog, User } from "lucide-react";
+import { Cog, User } from "lucide-react";
 import ConnectionStatus from "./connection-status";
 
 export function AppSidebar() {
@@ -38,7 +37,7 @@ export function AppSidebar() {
                             <NavLink to="/">
                                 <img
                                     alt="elizaos-icon"
-                                    src="/elizaos-icon.png"
+                                    src="/Rather-white.png"
                                     width="100%"
                                     height="100%"
                                     className="size-7"
@@ -46,7 +45,10 @@ export function AppSidebar() {
 
                                 <div className="flex flex-col gap-0.5 leading-none">
                                     <span className="font-semibold">
-                                        ElizaOS
+                                        RatherLabs
+                                    </span>
+                                    <span className="font-semibold">
+                                        Powered by ElizaOS
                                     </span>
                                     <span className="">v{info?.version}</span>
                                 </div>
@@ -60,17 +62,6 @@ export function AppSidebar() {
                     <SidebarGroupLabel>Agents</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {query?.isPending ? (
-                                <div>
-                                    {Array.from({ length: 5 }).map(
-                                        (_, _index) => (
-                                            <SidebarMenuItem key={"skeleton-item"}>
-                                                <SidebarMenuSkeleton />
-                                            </SidebarMenuItem>
-                                        )
-                                    )}
-                                </div>
-                            ) : (
                                 <div>
                                     {agents?.map(
                                         (agent: { id: UUID; name: string }) => (
@@ -93,23 +84,12 @@ export function AppSidebar() {
                                         )
                                     )}
                                 </div>
-                            )}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenu>
-                    <SidebarMenuItem>
-                        <NavLink
-                            to="https://elizaos.github.io/eliza/docs/intro/"
-                            target="_blank"
-                        >
-                            <SidebarMenuButton>
-                                <Book /> Documentation
-                            </SidebarMenuButton>
-                        </NavLink>
-                    </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton disabled>
                             <Cog /> Settings

@@ -29,6 +29,19 @@ export default defineConfig(({ mode }) => {
                 env.SERVER_BASE_URL
             )
         },
+        server: {
+            host: '0.0.0.0',  // Listen on all network interfaces
+            port: 5173,       // Explicitly set the port
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            },
+            cors: true,
+            hmr: {
+                host: 'd410-186-134-156-8.ngrok-free.app'
+            }
+        },
         build: {
             outDir: "dist",
             minify: true,
