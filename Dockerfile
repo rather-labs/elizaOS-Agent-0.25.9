@@ -38,7 +38,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN pnpm install
+RUN pnpm install --no-frozen-lockfile
 
 # Build the project
 RUN pnpm run build && pnpm prune --prod
@@ -71,9 +71,10 @@ COPY --from=builder /app/lerna.json ./
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/characters ./characters
+COPY --from=builder /app/.env ./
 
 # Expose necessary ports
 EXPOSE 3000 5173
 
 # Command to start the application
-CMD ["sh", "-c", "pnpm start & pnpm start:client"]
+CMD ["sh", "-c", "pnpm start"]

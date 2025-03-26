@@ -3,7 +3,7 @@ import { multiversxPlugin } from "@elizaos-plugins/plugin-multiversx";
 import { tonPlugin } from "@elizaos-plugins/plugin-ton";
 
 export const ratherCharacterBoth: Character = {
-    name: "Dobby Multiversx & TON",
+    name: "Dobby",
     //clients: [],
     plugins: [
         multiversxPlugin, 

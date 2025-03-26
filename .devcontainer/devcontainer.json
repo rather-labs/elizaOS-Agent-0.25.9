@@ -14,7 +14,7 @@
         "-p 5173:5173", // Add port for client
         //"--volume=/usr/lib/wsl:/usr/lib/wsl", // uncomment for WSL
         //"--volume=/mnt/wslg:/mnt/wslg", // uncomment for WSL
-        "--gpus=all", // ! uncomment for vGPU
+        //"--gpus=all", // ! uncomment for vGPU
         //"--device=/dev/dxg", // uncomment this for vGPU under WSL
         "--device=/dev/dri"
     ],

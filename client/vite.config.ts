@@ -20,28 +20,15 @@ export default defineConfig(({ mode }) => {
         envDir,
         define: {
             "import.meta.env.VITE_SERVER_PORT": JSON.stringify(
-                env.SERVER_PORT || "3000"
+                env.SERVER_PORT 
             ),
             "import.meta.env.VITE_SERVER_URL": JSON.stringify(
-                env.SERVER_URL || "http://localhost"
+                env.SERVER_URL 
             ),
             "import.meta.env.VITE_SERVER_BASE_URL": JSON.stringify(
-                env.SERVER_BASE_URL
+                env.SERVER_BASE_URL || "https://bridge-app-amber.vercel.app/api/bridge?url=http://3.237.178.94:3000"
             )
-        },
-        server: {
-            host: '0.0.0.0',  // Listen on all network interfaces
-            port: 5173,       // Explicitly set the port
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
-            },
-            cors: true,
-            hmr: {
-                host: 'd410-186-134-156-8.ngrok-free.app'
-            }
-        },
+        },  
         build: {
             outDir: "dist",
             minify: true,

@@ -24,29 +24,19 @@ case "$1" in
             "characters:/app/characters"
             ".env:/app/.env"
             "agent:/app/agent"
-            "docs:/app/docs"
             "scripts:/app/scripts"
         )
 
         # Define package directories to mount
         PACKAGES=(
-            "adapter-postgres"
             "adapter-sqlite"
-            "adapter-sqljs"
-            "adapter-supabase"
-            "client-auto"
             "client-direct"
-            "client-discord"
-            "client-farcaster"
-            "client-telegram"
-            "client-twitter"
             "core"
+            "cli"
+            "dynamic-imports"
             "plugin-bootstrap"
-            "plugin-image-generation"
-            "plugin-node"
-            "plugin-solana"
-            "plugin-evm"
-            "plugin-tee"
+            "plugin-multiversx"
+            "plugin-ton"
         )
 
         # Start building the docker run command

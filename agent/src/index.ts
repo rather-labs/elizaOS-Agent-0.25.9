@@ -19,7 +19,6 @@ import {
     stringToUuid,
     validateCharacterConfig,
 } from "@elizaos/core";
-import { defaultCharacter } from "./defaultCharacter.ts";
 import { ratherCharacterBoth } from "./ratherCharacterBoth.ts";
 
 import { bootstrapPlugin } from "@elizaos/plugin-bootstrap";
