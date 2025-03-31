@@ -6,9 +6,10 @@ import {
 } from "@/components/ui/chat/chat-bubble";
 import { ChatInput } from "@/components/ui/chat/chat-input";
 import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
+import { ChatSuggestions } from "@/components/ui/chat/chat-suggestions";
 import { useTransition, animated, type AnimatedProps } from "@react-spring/web";
 import { Paperclip, Send, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import type { Content, UUID } from "@elizaos/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
@@ -61,57 +62,8 @@ export default function Page({ agentId }: { agentId: UUID }) {
         scrollToBottom();
     }, []);
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            if (e.nativeEvent.isComposing) return;
-            handleSendMessage(e as unknown as React.FormEvent<HTMLFormElement>);
-        }
-    };
-
-    const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!input) return;
-
-        const attachments: IAttachment[] | undefined = selectedFile
-            ? [
-                  {
-                      url: URL.createObjectURL(selectedFile),
-                      contentType: selectedFile.type,
-                      title: selectedFile.name,
-                  },
-              ]
-            : undefined;
-
-        const newMessages = [
-            {
-                text: input,
-                user: "user",
-                createdAt: Date.now(),
-                attachments,
-            },
-            {
-                text: input,
-                user: "system",
-                isLoading: true,
-                createdAt: Date.now(),
-            },
-        ];
-
-        queryClient.setQueryData(
-            ["messages", agentId],
-            (old: ContentWithUser[] = []) => [...old, ...newMessages]
-        );
-
-        sendMessageMutation.mutate({
-            message: input,
-            selectedFile: selectedFile ? selectedFile : null,
-        });
-
-        setSelectedFile(null);
-        setInput("");
-        formRef.current?.reset();
-    };
+    // State to track whether to show suggestions container
+    const [showSuggestions, setShowSuggestions] = useState(true);
 
     useEffect(() => {
         if (inputRef.current) {
@@ -160,6 +112,70 @@ export default function Page({ agentId }: { agentId: UUID }) {
         queryClient.getQueryData<ContentWithUser[]>(["messages", agentId]) ||
         [];
 
+    // Check if we're waiting for a response - moved here after dependencies are defined
+    const isWaitingForResponse = useMemo(() => {
+        // Either the mutation is pending or the last message is a loading message
+        return sendMessageMutation?.isPending || 
+               (messages.length > 0 && messages[messages.length - 1]?.isLoading);
+    }, [sendMessageMutation?.isPending, messages]);
+
+    // Handle form submission (sending a message)
+    const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!input || isWaitingForResponse) return;
+
+        // Keep showing suggestions container even when sending a message
+        // The hover interaction will handle expanding/collapsing
+
+        const attachments: IAttachment[] | undefined = selectedFile
+            ? [
+                  {
+                      url: URL.createObjectURL(selectedFile),
+                      contentType: selectedFile.type,
+                      title: selectedFile.name,
+                  },
+              ]
+            : undefined;
+
+        const newMessages = [
+            {
+                text: input,
+                user: "user",
+                createdAt: Date.now(),
+                attachments,
+            },
+            {
+                text: input,
+                user: "system",
+                isLoading: true,
+                createdAt: Date.now(),
+            },
+        ];
+
+        queryClient.setQueryData(
+            ["messages", agentId],
+            (old: ContentWithUser[] = []) => [...old, ...newMessages]
+        );
+
+        sendMessageMutation.mutate({
+            message: input,
+            selectedFile: selectedFile ? selectedFile : null,
+        });
+
+        setSelectedFile(null);
+        setInput("");
+        formRef.current?.reset();
+    };
+
+    // Handle key down (e.g., Enter key to send message) - moved after dependencies are defined
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            if (e.nativeEvent.isComposing || isWaitingForResponse) return;
+            handleSendMessage(e as unknown as React.FormEvent<HTMLFormElement>);
+        }
+    };
+
     const transitions = useTransition(messages, {
         keys: (message) =>
             `${message.createdAt}-${message.user}-${message.text}`,
@@ -169,6 +185,37 @@ export default function Page({ agentId }: { agentId: UUID }) {
     });
 
     const CustomAnimatedDiv = animated.div as React.FC<AnimatedDivProps>;
+
+    // Fixed set of suggested prompts
+    const [suggestions] = useState<string[]>([
+        "What actions can you take on chain?",
+        "I want to connect my TON wallet",
+        "What info can you provide about STON asset on STON.fi?",
+        "I want to swap 0.01 STON for TON through STON.fi",
+        "what information can you provide about the pending swap?",
+        "I want to cancel the pending swap",
+        "I want to finish the pending swap",
+        "I want to swap 0.01 EGLD for USDT in multiversx"
+    ]);
+
+    // Handle suggestion click
+    const handleSuggestionClick = (suggestion: string) => {
+        // Don't do anything if waiting for response
+        if (isWaitingForResponse) return;
+        
+        // Set input to the suggestion text
+        setInput(suggestion);
+        
+        // Focus the input after clicking a suggestion
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    };
+
+    // Always keep suggestions container visible
+    useEffect(() => {
+        setShowSuggestions(true);
+    }, []);
 
     return (
         <div className="flex flex-col w-full h-[calc(100dvh)] p-4">
@@ -282,11 +329,19 @@ export default function Page({ agentId }: { agentId: UUID }) {
                     })}
                 </ChatMessageList>
             </div>
-            <div className="px-4 pb-4">
+
+            <div className="pt-4">
+                {showSuggestions && <ChatSuggestions 
+                    suggestions={suggestions}
+                    onSuggestionClick={handleSuggestionClick}
+                    className="mb-4"
+                    disabled={isWaitingForResponse}
+                />}
+                
                 <form
                     ref={formRef}
                     onSubmit={handleSendMessage}
-                    className="relative rounded-md border bg-card"
+                    className="flex flex-col p-4 bg-card rounded-lg shadow-sm border"
                 >
                     {selectedFile ? (
                         <div className="p-3 flex">
@@ -296,6 +351,7 @@ export default function Page({ agentId }: { agentId: UUID }) {
                                     className="absolute -right-2 -top-2 size-[22px] ring-2 ring-background"
                                     variant="outline"
                                     size="icon"
+                                    disabled={isWaitingForResponse}
                                 >
                                     <X />
                                 </Button>
@@ -314,8 +370,12 @@ export default function Page({ agentId }: { agentId: UUID }) {
                         onKeyDown={handleKeyDown}
                         value={input}
                         onChange={({ target }) => setInput(target.value)}
-                        placeholder="Type your message here..."
-                        className="min-h-12 resize-none rounded-md bg-card border-0 p-3 shadow-none focus-visible:ring-0"
+                        placeholder={isWaitingForResponse ? "Waiting for response..." : "Type your message here..."}
+                        className={cn(
+                            "min-h-12 resize-none rounded-md bg-card border-0 p-3 shadow-none focus-visible:ring-0",
+                            isWaitingForResponse && "opacity-60"
+                        )}
+                        disabled={isWaitingForResponse}
                     />
                     <div className="flex items-center p-3 pt-0">
                         <Tooltip>
@@ -329,6 +389,7 @@ export default function Page({ agentId }: { agentId: UUID }) {
                                                 fileInputRef.current.click();
                                             }
                                         }}
+                                        disabled={isWaitingForResponse}
                                     >
                                         <Paperclip className="size-4" />
                                         <span className="sr-only">
@@ -341,6 +402,7 @@ export default function Page({ agentId }: { agentId: UUID }) {
                                         onChange={handleFileChange}
                                         accept="image/*"
                                         className="hidden"
+                                        disabled={isWaitingForResponse}
                                     />
                                 </div>
                             </TooltipTrigger>
@@ -351,14 +413,15 @@ export default function Page({ agentId }: { agentId: UUID }) {
                         <AudioRecorder
                             agentId={agentId}
                             onChange={(newInput: string) => setInput(newInput)}
+                            disabled={isWaitingForResponse}
                         />
                         <Button
-                            disabled={!input || sendMessageMutation?.isPending}
+                            disabled={!input || isWaitingForResponse}
                             type="submit"
                             size="sm"
                             className="ml-auto gap-1.5 h-[30px]"
                         >
-                            {sendMessageMutation?.isPending
+                            {isWaitingForResponse
                                 ? "..."
                                 : "Send Message"}
                             <Send className="size-3.5" />
