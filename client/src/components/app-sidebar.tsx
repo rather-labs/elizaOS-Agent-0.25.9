@@ -43,14 +43,14 @@ export function AppSidebar() {
                                     className="size-7"
                                 />
 
-                                <div className="flex flex-col gap-0.5 leading-none">
-                                    <span className="font-semibold">
+                                <div className="flex flex-col gap-0.5 leading-none w-full">
+                                    <span className="font-semibold  whitespace-nowrap">
                                         RatherLabs
                                     </span>
-                                    <span className="font-semibold">
+                                    <span className="font-semibold whitespace-nowrap">
                                         Powered by ElizaOS
                                     </span>
-                                    <span className="">v{info?.version}</span>
+                                    <span className="whitespace-nowrap">v{info?.version}</span>
                                 </div>
                             </NavLink>
                         </SidebarMenuButton>
