@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => {
                 env.SERVER_URL 
             ),
             "import.meta.env.VITE_SERVER_BASE_URL": JSON.stringify(
-                env.SERVER_BASE_URL || "https://bridge-app-amber.vercel.app/api/bridge?url=http://34.228.54.160:3000"
+                env.SERVER_BASE_URL || "https://bridge-app-amber.vercel.app/api/bridge?url=http://18.232.59.50:3000"
             )
         },  
         build: {
